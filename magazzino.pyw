@@ -28,7 +28,7 @@ from PyQt4.QtGui  import QDataWidgetMapper, QTextDocument, QStyle
 from PyQt4.QtGui  import QColor, QBrush, QTextOption
 from PyQt4.QtGui  import QItemSelectionModel,QStandardItemModel
 from PyQt4.QtGui  import QAbstractItemView, QIntValidator
-from PyQt4.QtGui  import QDoubleValidator
+from PyQt4.QtGui  import QDoubleValidator, QIcon
 
 from PyQt4.QtSql  import QSqlDatabase, QSqlQuery, QSqlRelation
 from PyQt4.QtSql  import QSqlRelationalDelegate, QSqlRelationalTableModel
@@ -170,6 +170,8 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
 
         self.setupUi(self)
 
+        self.setWindowIcon(QIcon(":/phonelogsplash.png"))
+
         self.editindex = None
 
         self.setupModels()
@@ -223,10 +225,10 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
             canvas.setStrokeColorRGB(0.50,0.50,0.50)
             canvas.setLineWidth(10)
             canvas.line(45,72,45,PAGE_HEIGHT-72)
-            #~ canvas.setFont('Times-Bold',16)
-            #~ canvas.drawString(108, PAGE_HEIGHT-60, Title)
+            #canvas.setFont('Times-Bold',16)
+            #canvas.drawCentredString(3*cm, 1.5*cm,Title)
             canvas.setFont('Times-Roman',9)
-            canvas.drawString(3 * cm, 1.5*cm, "First Page / %s" % pageinfo)
+            canvas.drawString(3*cm, 1.5*cm, "First Page / %s" % pageinfo)
             canvas.restoreState()
 
         def myLaterPages(canvas, doc):
@@ -249,33 +251,50 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
             querydett.exec_()
             data = [['Datains', 'Abbi', 'Angro', 'Descrizione', 'Qt', 'Imp'],]
             while querydett.next():
-                data.append([   unicode(querydett.value(0).toDate().toString("dd/MM/yyyy")),
-                                p(unicode(querydett.value(1).toString()),ps(name='Normal')),
-                                p(unicode(querydett.value(2).toString()),ps(name='Normal')),
-                                p(unicode(querydett.value(3).toString()),ps(name='Normal')),
+                data.append([   unicode(querydett.value(0).toDate().toString(
+                                                    "dd/MM/yyyy")),
+                                p(unicode(querydett.value(1).toString()),
+                                                ps(name='Normal')),
+                                p(unicode(querydett.value(2).toString()),
+                                                ps(name='Normal')),
+                                p(unicode(querydett.value(3).toString()),
+                                                ps(name='Normal')),
                                 querydett.value(4).toInt()[0],
-                                unicode("%.2f" % querydett.value(5).toDouble()[0])])
+                                unicode("%.2f" %
+                                        querydett.value(5).toDouble()[0])])
             data.append([None, None, None,
                         unicode("GRUPPO '%s'" % querygrp.value(0).toString()),
                         unicode("Subtotale:"),
                         unicode("€ %.2f" % querygrp.value(3).toDouble()[0])])
             Elements.append(Table(data,repeatRows=1,
-                                style=(['LINEBELOW', (3,-2), (-1,-2), 1, colors.black],
-                                        ['LINEBELOW', (0,0), (-1,0), 1, colors.black],
+                                style=(['LINEBELOW', (3,-2), (-1,-2),
+                                            1, colors.black],
+                                        ['LINEBELOW', (0,0), (-1,0),
+                                            1, colors.black],
                                         ['ALIGN', (1,0), (3,-1),'CENTER'],
                                         ['ALIGN', (4,0), (-1,0),'RIGHT'],
                                         ['VALIGN', (0,0), (-1,-1), 'TOP'],
                                         ['ALIGN', (4,0), (-1,-1), 'RIGHT'],
-                                        ['TEXTCOLOR', (0,0), (-1,0), colors.red],
-                                        ['FONT', (0, 0), (-1, 0), 'Times-Bold', 12])))
+#                                        ['TEXTCOLOR', (0,0), (-1,0),
+#                                                colors.red],
+                                        ['BACKGROUND',(0,0),(-1,0),
+                                                colors.lightgrey],
+                                        ['GRID',(0,0),(-1,-1), 0.2,
+                                                colors.black],
+                                        ['FONT', (0, 0), (-1, 0),
+                                                'Helvetica-Bold', 10],
+                                        ['FONT', (3, -1), (3, -1),
+                                                'Helvetica-Bold', 10])))
             Elements.append(Spacer(0.5*cm, 0.5*cm))
 
         Elements.append(Paragraph("<para align=right><b>TOTALE GENERALE: € %.2f</b></para>" % tot, styleN))
 
-        doc = SimpleDocTemplate('mydoc.pdf')
+        doc = SimpleDocTemplate(os.path.join(os.path.dirname(__file__),
+                        'mydoc.pdf'))
         doc.build(Elements,onFirstPage=myFirstPage, onLaterPages=myLaterPages)
 
-        subprocess.call(['gnome-open','mydoc.pdf'])
+        subprocess.call(['gnome-open',os.path.join(os.path.dirname(__file__),
+                        'mydoc.pdf')])
 
     def setupMappers(self):
         '''
