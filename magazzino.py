@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Gestione magazzino 0.2
+# Gestione magazzino
 # by TIME di Stefano Zamprogno
-# 12/05/2009
+# Initial release 12/05/2009
 
 from __future__ import division
 from __future__ import print_function
@@ -28,7 +28,7 @@ from PyQt4.QtGui  import QDataWidgetMapper, QTextDocument, QStyle
 from PyQt4.QtGui  import QColor, QBrush, QTextOption
 from PyQt4.QtGui  import QItemSelectionModel,QStandardItemModel
 from PyQt4.QtGui  import QAbstractItemView, QIntValidator
-from PyQt4.QtGui  import QDoubleValidator, QIcon
+from PyQt4.QtGui  import QDoubleValidator, QIcon, QFileDialog
 
 from PyQt4.QtSql  import QSqlDatabase, QSqlQuery, QSqlRelation
 from PyQt4.QtSql  import QSqlRelationalDelegate, QSqlRelationalTableModel
@@ -52,36 +52,6 @@ DATEFORMAT = "dd/MM/yyyy"
 MAGAORG = "TIME di Stefano Z."
 MAGAAPP = "Gestione Magazzino"
 MAGADOMAIN = "zamprogno.it"
-
-def creaStrutturaDB():
-    query = QSqlQuery()
-    if not query.exec_("""CREATE TABLE magamaster (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,
-                        scaff VARCHAR(10) NOT NULL)"""):
-        QMessageBox.warning(None, "Magazzino",
-                        QString("Creazione tabella fallita!"))
-        sys.exit(1)
-
-    if not query.exec_("""CREATE TABLE magaslave (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,
-                        datains DATE NOT NULL,
-                        abbi VARCHAR(50),
-                        angro VARCHAR(50),
-                        desc VARCHAR(100),
-                        qt INTEGER NOT NULL DEFAULT '1',
-                        imp DOUBLE NOT NULL DEFAULT '0.0',
-                        equiv VARCHAR(100),
-                        mmid INTEGER NOT NULL,
-                        fatt VARCHAR(50),
-                        note VARCHAR(200),
-                        FOREIGN KEY (mmid) REFERENCES magamaster)"""):
-        QMessageBox.warning(None, "Magazzino",
-                        QString("Creazione tabella fallita!"))
-        sys.exit(1)
-
-    QMessageBox.information(None, "Magazzino",
-                        QString("Database Creato!"))
-
 
 class ssModel(QSqlTableModel):
     def __init__(self, parent=None):
@@ -173,26 +143,107 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
 
         self.setupUi(self)
         self.setupMenu()
-
-        self.setWindowIcon(QIcon(":/magazzino.png"))
+        self.restoreWinSettings()
 
         self.editindex = None
+        self.filename = None
+        self.db = QSqlDatabase.addDatabase("QSQLITE")
 
-        self.setupModels()
-        self.setupMappers()
-        self.setupTables()
-        self.setupSignals()
-        self.restoreSettings()
+        self.loadInitialFile()
+        self.setupUiSignals()
 
-        self.mmUpdate()
+
+    def creaStrutturaDB(self):
+        query = QSqlQuery()
+        if not query.exec_("""CREATE TABLE magamaster (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,
+                            scaff VARCHAR(10) NOT NULL)"""):
+            QMessageBox.warning(self, "Magazzino",
+                            QString("Creazione tabella fallita!"))
+            return False
+
+        if not query.exec_("""CREATE TABLE magaslave (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,
+                            datains DATE NOT NULL,
+                            abbi VARCHAR(50),
+                            angro VARCHAR(50),
+                            desc VARCHAR(100),
+                            qt INTEGER NOT NULL DEFAULT '1',
+                            imp DOUBLE NOT NULL DEFAULT '0.0',
+                            equiv VARCHAR(100),
+                            mmid INTEGER NOT NULL,
+                            fatt VARCHAR(50),
+                            note VARCHAR(200),
+                            FOREIGN KEY (mmid) REFERENCES magamaster)"""):
+            QMessageBox.warning(self, "Magazzino",
+                            QString("Creazione tabella fallita!"))
+            return False
+
+        QMessageBox.information(self, "Magazzino",
+                            QString("Database Creato!"))
+        return True
+
+    def loadFile(self, fname=None, fnew=False):
+        if fname is None:
+            return
+        if self.db.isOpen():
+            self.db.close()
+        self.db.setDatabaseName(QString(fname))
+        if not self.db.open():
+            QMessageBox.warning(self, "Magazzino",
+                                QString("Database Error: %1")
+                                .arg(db.lastError().text()))
+        else:
+            if fnew:
+                if not self.creaStrutturaDB():
+                    return
+            self.filename = unicode(fname)
+            self.setupModels()
+            self.setupMappers()
+            self.setupTables()
+            self.setupItmSignals()
+            self.restoreTablesSettings()
+            self.mmUpdate()
+
+
+    def loadInitialFile(self):
+        settings = QSettings()
+        fname = unicode(settings.value("Settings/lastFile").toString())
+        if fname and QFile.exists(fname):
+            self.loadFile(fname)
+
+
+    def openFile(self):
+        dir = os.path.dirname(self.filename) \
+                if self.filename is not None else "."
+        fname = QFileDialog.getOpenFileName(self,
+                    "Gestione Magazzino - Scegli database",
+                    dir, "*.db")
+        if fname:
+            self.loadFile(fname)
+
+
+    def newFile(self):
+        dir = os.path.dirname(self.filename) \
+                if self.filename is not None else "."
+        fname = QFileDialog.getSaveFileName(self,
+                    "Gestione Magazzino - Scegli database",
+                    dir, "*.db")
+        if fname:
+            self.loadFile(fname, True)
 
     def setupMenu(self):
         # AboutBox
         self.connect(self.actionA_bout, SIGNAL("triggered()"),
                     self.showAboutBox)
         # FileNew
+        self.connect(self.action_New_File, SIGNAL("triggered()"),
+                    self.newFile)
 
         # FileLoad
+        self.connect(self.action_Load_File, SIGNAL("triggered()"),
+                    self.openFile)
+
 
     def showAboutBox(self):
         dlg = aboutbox.AboutBox(self)
@@ -202,6 +253,11 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
         '''
             Print Inventory
         '''
+        if not self.db.isOpen():
+            self.statusbar.showMessage(
+                "Database non aperto...",
+                5000)
+            return
         querygrp = QSqlQuery()
         querydett = QSqlQuery()
 
@@ -338,6 +394,7 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
         self.sTableView.setSelectionBehavior(QTableView.SelectRows)
         self.sTableView.setTabKeyNavigation(False)
 
+
         self.fTableView.setModel(self.fModel)
         self.fTableView.setColumnHidden(ID, True)
         self.fTableView.setWordWrap(True)
@@ -394,11 +451,12 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
                                             "id", "scaff"))
         self.fModel.select()
 
-
-    def setupSignals(self):
+    def setupItmSignals(self):
         self.connect(self.sItmSelModel, SIGNAL(
                     "currentChanged(QModelIndex, QModelIndex)"),
                     self.editEsc)
+
+    def setupUiSignals(self):
         self.connect(self.scaffLineEdit, SIGNAL("returnPressed()"),
                     lambda: self.saveRecord(MainWindow.FIRST))
         self.connect(self.findLineEdit, SIGNAL("returnPressed()"),
@@ -430,6 +488,11 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
 
 
     def globalFilter(self):
+        if not self.db.isOpen():
+            self.statusbar.showMessage(
+                "Database non aperto...",
+                5000)
+            return
         txt = self.findLineEdit.text()
         qry =   ("(datains like '%s') OR "
                 "(abbi like '%s') OR "
@@ -446,10 +509,20 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
         self.fTableView.setColumnHidden(ID, True)
 
     def applyFilter(self):
+        if not self.db.isOpen():
+            self.statusbar.showMessage(
+                "Database non aperto...",
+                5000)
+            return
         self.fModel.setFilter(self.findLineEdit.text())
         self.updateFilter()
 
     def createFilter(self):
+        if not self.db.isOpen():
+            self.statusbar.showMessage(
+                "Database non aperto...",
+                5000)
+            return
         headerDef = ("datains VARCHAR(100)",
                             "abbi VARCHAR(100)",
                             "angro VARCHAR(100)",
@@ -480,6 +553,11 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
         self.sTableView.setColumnHidden(MMID, True)
 
     def saveRecord(self, where):
+        if not self.db.isOpen():
+            self.statusbar.showMessage(
+                "Database non aperto...",
+                5000)
+            return
         row = self.mapper.currentIndex()
         self.mapper.submit()
         self.sModel.revertAll()
@@ -497,14 +575,24 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
         self.mmUpdate()
 
     def addScaffRecord(self):
-        self.row_ = self.mModel.rowCount()
+        if not self.db.isOpen():
+            self.statusbar.showMessage(
+                "Database non aperto...",
+                5000)
+            return
+        row = self.mModel.rowCount()
         self.mapper.submit()
-        self.mModel.insertRow(self.row_)
-        self.mapper.setCurrentIndex(self.row_)
+        self.mModel.insertRow(row)
+        self.mapper.setCurrentIndex(row)
         self.scaffLineEdit.setFocus()
         self.mmUpdate()
 
     def addDettRecord(self):
+        if not self.db.isOpen():
+            self.statusbar.showMessage(
+                "Database non aperto...",
+                5000)
+            return
         rowscaff = self.mapper.currentIndex()
         record = self.mModel.record(rowscaff)
         masterid = record.value(ID).toInt()[0]
@@ -535,6 +623,11 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
         self.sTableView.edit(self.editindex)
 
     def delDettRecord(self):
+        if not self.db.isOpen():
+            self.statusbar.showMessage(
+                "Database non aperto...",
+                5000)
+            return
         selrows = self.sItmSelModel.selectedRows()
         if not selrows:
             self.statusbar.showMessage(
@@ -558,6 +651,11 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
         self.mmUpdate()
 
     def delScaffRecord(self):
+        if not self.db.isOpen():
+            self.statusbar.showMessage(
+                "Database non aperto...",
+                5000)
+            return
         row = self.mapper.currentIndex()
         if row == -1:
             self.statusbar.showMessage(
@@ -581,6 +679,8 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
         if row + 1 >= self.mModel.rowCount():
             row = self.mModel.rowCount() - 1
         self.mapper.setCurrentIndex(row)
+        if self.mModel.rowCount() == 0:
+            self.scaffLineEdit.setText(QString(""))
 
         # cancella tutti gli articoli che si riferiscono
         # allo scaffale cancellato
@@ -593,21 +693,8 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
                         5000)
         self.mmUpdate()
 
-    def restoreSettings(self):
-        settings = QSettings()
-        self.prtTitleLineEdit.setText(QString(settings.value(
-                            "Settings/printTitle", QVariant(
-                            "Situazione Magazzino - TIME di Stefano Zamprogno")).toString()))
-        self.prtDateLineEdit.setText(QString(settings.value(
-                            "Settings/printDate", QVariant(
-                            "Al 31/12/2008")).toString()))
-        self.saveWinPosCheckBox.setChecked(
-                settings.value("Settings/saveWinPos", QVariant(True)).toBool())
-        self.saveTableGeometryCheckBox.setChecked(
-                settings.value("Settings/saveTableGeometry",
-                QVariant(True)).toBool())
-        self.restoreGeometry(
-                settings.value("MainWindow/Geometry").toByteArray())
+    def restoreTablesSettings(self):
+        settings = QSettings(self)
         if self.saveTableGeometryCheckBox.isChecked():
             # per la tabella slave
             for c in range(1, self.sModel.columnCount()-1):
@@ -623,9 +710,26 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
                 self.fTableView.setColumnWidth(c,
                                             width if width > 0 else 60)
 
+    def restoreWinSettings(self):
+        settings = QSettings()
+        self.prtTitleLineEdit.setText(QString(settings.value(
+                            "Settings/printTitle", QVariant(
+                            "Situazione Magazzino - TIME di Stefano Zamprogno")).toString()))
+        self.prtDateLineEdit.setText(QString(settings.value(
+                            "Settings/printDate", QVariant(
+                            "Al 31/12/2008")).toString()))
+        self.saveWinPosCheckBox.setChecked(
+                settings.value("Settings/saveWinPos", QVariant(True)).toBool())
+        self.saveTableGeometryCheckBox.setChecked(
+                settings.value("Settings/saveTableGeometry",
+                QVariant(True)).toBool())
+        self.restoreGeometry(
+                settings.value("MainWindow/Geometry").toByteArray())
 
     def closeEvent(self, event):
         settings = QSettings()
+        if self.filename is not None:
+            settings.setValue("Settings/lastFile", QVariant(self.filename))
         settings.setValue("MainWindow/Geometry", QVariant(
                           self.saveGeometry()))
         settings.setValue("Settings/saveWinPos", QVariant(
@@ -637,19 +741,22 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
         settings.setValue("Settings/printDate", QVariant(
                           self.prtDateLineEdit.text()))
 
-        # salva larghezza colonne tabella slave
-        for c in range(1, self.sModel.columnCount()-1):
-            width = self.sTableView.columnWidth(c)
-            if width:
-                settings.setValue("Settings/sTableView/%s" % c,
-                                    QVariant(width))
+        if self.db.isOpen():
+            # salva larghezza colonne tabella slave
+            for c in range(1, self.sModel.columnCount()-1):
+                width = self.sTableView.columnWidth(c)
+                if width:
+                    settings.setValue("Settings/sTableView/%s" % c,
+                                        QVariant(width))
 
-        # salva larghezza colonne tabella find
-        for c in range(1, self.fModel.columnCount()):
-            width = self.fTableView.columnWidth(c)
-            if width:
-                settings.setValue("Settings/fTableView/%s" % c,
-                    QVariant(width))
+            # salva larghezza colonne tabella find
+            for c in range(1, self.fModel.columnCount()):
+                width = self.fTableView.columnWidth(c)
+                if width:
+                    settings.setValue("Settings/fTableView/%s" % c,
+                        QVariant(width))
+        self.db.close()
+        del self.db
 
 def main():
     app = QApplication(sys.argv)
@@ -657,24 +764,10 @@ def main():
     app.setOrganizationDomain(MAGADOMAIN)
     app.setApplicationName(MAGAAPP)
 
-    filename = os.path.join(os.path.dirname(__file__), "magazzino.db")
-    create = not QFile.exists(filename)
-    db = QSqlDatabase.addDatabase("QSQLITE")
-    db.setDatabaseName(filename)
-    if not db.open():
-        QMessageBox.warning(None, "Magazzino",
-            QString("Database Error: %1")
-            .arg(db.lastError().text()))
-        sys.exit(1)
-
-    if create:
-        creaStrutturaDB()
-
     form = MainWindow()
     form.show()
     app.exec_()
     del form
-    del db
 
 main()
 

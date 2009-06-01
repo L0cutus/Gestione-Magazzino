@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>Gestione Magazzino</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/magazzino.png</normaloff>:/magazzino.png</iconset>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
@@ -388,9 +392,9 @@
     <property name="title">
      <string>F&amp;ile</string>
     </property>
-    <addaction name="action_Open_file"/>
+    <addaction name="action_New_File"/>
     <addaction name="separator"/>
-    <addaction name="action_Load_database"/>
+    <addaction name="action_Load_File"/>
     <addaction name="actionE_xit"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
@@ -403,19 +407,19 @@
    <addaction name="menu_Help"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="action_Open_file">
+  <action name="action_New_File">
    <property name="icon">
     <iconset resource="resources.qrc">
-     <normaloff>:/new.png</normaloff>:/new.png</iconset>
+     <normaloff>:/filenew.png</normaloff>:/filenew.png</iconset>
    </property>
    <property name="text">
     <string>&amp;New database</string>
    </property>
   </action>
-  <action name="action_Load_database">
+  <action name="action_Load_File">
    <property name="icon">
     <iconset resource="resources.qrc">
-     <normaloff>:/save.png</normaloff>:/save.png</iconset>
+     <normaloff>:/fileopen.png</normaloff>:/fileopen.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Load database</string>

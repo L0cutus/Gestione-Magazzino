@@ -1,7 +1,9 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
-<file alias="app.ico">images/first.png</file>
+<file alias="app.ico">images/app.ico</file>
 <file alias="exit2.png">images/exit2.png</file>
+<file alias="fileopen.png">images/fileopen.png</file>
+<file alias="filenew.png">images/filenew.png</file>
 <file alias="logout.png">images/logout.png</file>
 <file alias="properties.png">images/properties.png</file>
 <file alias="refresh.png">images/refresh.png</file>
