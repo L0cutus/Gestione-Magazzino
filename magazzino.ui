@@ -46,7 +46,7 @@
              <widget class="QPushButton" name="addscaffPushButton">
               <property name="icon">
                <iconset resource="resources.qrc">
-                <normaloff>:/add.png</normaloff>:/add.png</iconset>
+                <normaloff>:/add2.png</normaloff>:/add2.png</iconset>
               </property>
              </widget>
             </item>
@@ -57,7 +57,7 @@
               </property>
               <property name="icon">
                <iconset resource="resources.qrc">
-                <normaloff>:/delete.png</normaloff>:/delete.png</iconset>
+                <normaloff>:/cancel.png</normaloff>:/cancel.png</iconset>
               </property>
              </widget>
             </item>
@@ -201,21 +201,33 @@
           <item>
            <widget class="QPushButton" name="findPushButton">
             <property name="text">
-             <string>Appl&amp;y</string>
+             <string>Appl&amp;yFlt</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources.qrc">
+              <normaloff>:/refresh.png</normaloff>:/refresh.png</iconset>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="gSearchPushButton">
             <property name="text">
-             <string>&amp;GlobalSearch</string>
+             <string>&amp;GlobalFind</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources.qrc">
+              <normaloff>:/find.png</normaloff>:/find.png</iconset>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="createFilterPushButton">
             <property name="text">
-             <string>&amp;CreateFilter</string>
+             <string>&amp;CreateFlt</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources.qrc">
+              <normaloff>:/edit.png</normaloff>:/edit.png</iconset>
             </property>
            </widget>
           </item>
@@ -289,7 +301,11 @@
         <item row="1" column="2">
          <widget class="QPushButton" name="printPushButton">
           <property name="text">
-           <string>Print</string>
+           <string>P&amp;rint</string>
+          </property>
+          <property name="icon">
+           <iconset resource="resources.qrc">
+            <normaloff>:/fileprint.png</normaloff>:/fileprint.png</iconset>
           </property>
          </widget>
         </item>
@@ -373,9 +389,8 @@
      <string>F&amp;ile</string>
     </property>
     <addaction name="action_Open_file"/>
-    <addaction name="action_Load_database"/>
-    <addaction name="action_Save_database"/>
     <addaction name="separator"/>
+    <addaction name="action_Load_database"/>
     <addaction name="actionE_xit"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
@@ -389,11 +404,19 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="action_Open_file">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/new.png</normaloff>:/new.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;New database</string>
    </property>
   </action>
   <action name="action_Load_database">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/save.png</normaloff>:/save.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Load database</string>
    </property>
@@ -404,14 +427,24 @@
    </property>
   </action>
   <action name="actionA_bout">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/info.png</normaloff>:/info.png</iconset>
+   </property>
    <property name="text">
     <string>A&amp;bout</string>
+   </property>
+   <property name="toolTip">
+    <string>About...</string>
+   </property>
+   <property name="statusTip">
+    <string>About...</string>
    </property>
   </action>
   <action name="actionE_xit">
    <property name="icon">
     <iconset resource="resources.qrc">
-     <normaloff>:/quit.png</normaloff>:/quit.png</iconset>
+     <normaloff>:/exit2.png</normaloff>:/exit2.png</iconset>
    </property>
    <property name="text">
     <string>E&amp;xit</string>
@@ -424,7 +457,24 @@
  <resources>
   <include location="resources.qrc"/>
  </resources>
- <connections/>
+ <connections>
+  <connection>
+   <sender>actionE_xit</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>285</x>
+     <y>227</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
  <designerdata>
   <property name="gridDeltaX">
    <number>10</number>

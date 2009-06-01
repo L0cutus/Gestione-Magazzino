@@ -1,13 +1,36 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
+<file alias="app.ico">images/first.png</file>
+<file alias="exit2.png">images/exit2.png</file>
+<file alias="logout.png">images/logout.png</file>
+<file alias="properties.png">images/properties.png</file>
+<file alias="refresh.png">images/refresh.png</file>
+<file alias="save.png">images/save.png</file>
+<file alias="new.png">images/new.png</file>
+<file alias="info.png">images/info.png</file>
+<file alias="logo.gif">images/logo.gif</file>
 <file alias="first.png">images/first.png</file>
+<file alias="cancel.png">images/cancel.png</file>
+<file alias="print.png">images/print.png</file>
 <file alias="prev.png">images/prev.png</file>
 <file alias="next.png">images/next.png</file>
 <file alias="last.png">images/last.png</file>
 <file alias="add.png">images/add.png</file>
 <file alias="delete.png">images/delete.png</file>
+<file alias="add2.png">images/add2.png</file>
+<file alias="delete2.png">images/delete2.png</file>
+<file alias="find.png">images/find.png</file>
+<file alias="edit.png">images/edit.png</file>
+<file alias="execute2.png">images/execute2.png</file>
+<file alias="spunta.png">images/spunta.png</file>
 <file alias="quit.png">images/quit.png</file>
+<file alias="add3d.png">images/add3d.png</file>
+<file alias="execute.png">images/execute.png</file>
+<file alias="delete3d.png">images/delete3d.png</file>
+<file alias="editzoom.png">images/editzoom.png</file>
+<file alias="fileprint.png">images/fileprint.png</file>
+<file alias="exit.png">images/exit.png</file>
 <file alias="assetmanagersplash.png">images/assetmanagersplash.png</file>
-<file alias="phonelogsplash.png">images/phonelogsplash.png</file>
+<file alias="magazzino.png">images/magazzino.png</file>
 </qresource>
 </RCC>

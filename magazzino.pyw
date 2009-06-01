@@ -35,7 +35,10 @@ from PyQt4.QtSql  import QSqlRelationalDelegate, QSqlRelationalTableModel
 from PyQt4.QtSql  import QSqlTableModel
 
 import ui_magazzino
-import filterdlg
+import filterdialog
+import aboutbox
+
+__version__ = '0.2.0'
 
 # Definizione degli 'id' usati poi come colonne nelle tabelle ecc...
 ID, SCAFF = 0, 1
@@ -169,8 +172,9 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
         super(MainWindow, self).__init__(parent)
 
         self.setupUi(self)
+        self.setupMenu()
 
-        self.setWindowIcon(QIcon(":/phonelogsplash.png"))
+        self.setWindowIcon(QIcon(":/magazzino.png"))
 
         self.editindex = None
 
@@ -181,6 +185,18 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
         self.restoreSettings()
 
         self.mmUpdate()
+
+    def setupMenu(self):
+        # AboutBox
+        self.connect(self.actionA_bout, SIGNAL("triggered()"),
+                    self.showAboutBox)
+        # FileNew
+
+        # FileLoad
+
+    def showAboutBox(self):
+        dlg = aboutbox.AboutBox(self)
+        dlg.exec_()
 
     def printInventory(self):
         '''
@@ -374,7 +390,8 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
         self.fModel.setHeaderData(FATT, Qt.Horizontal, QVariant("Fatt"))
         self.fModel.setHeaderData(NOTE, Qt.Horizontal, QVariant("Note"))
         self.fModel.setSort(MMID, Qt.AscendingOrder)
-        self.fModel.setRelation(MMID, QSqlRelation("magamaster", "id", "scaff"))
+        self.fModel.setRelation(MMID, QSqlRelation("magamaster",
+                                            "id", "scaff"))
         self.fModel.select()
 
 
@@ -422,11 +439,15 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
                 "(fatt like '%s') OR"
                 "(note like '%s')") % ((txt,)*7)
         self.fModel.setFilter(qry)
+        self.updateFilter()
+
+    def updateFilter(self):
         self.fModel.select()
+        self.fTableView.setColumnHidden(ID, True)
 
     def applyFilter(self):
         self.fModel.setFilter(self.findLineEdit.text())
-        self.fModel.select()
+        self.updateFilter()
 
     def createFilter(self):
         headerDef = ("datains VARCHAR(100)",
@@ -438,10 +459,10 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
                             "equiv VARCHAR(100)",
                             "fatt VARCHAR(100)",
                             "note VARCHAR(100)")
-        dlg = filterdlg.FilterDialog(headerDef,
+        dlg = filterdialog.FilterDialog(headerDef,
                         QSqlDatabase.database(), self)
         if(dlg.exec_()):
-            self.findLineEdit.setText(dlg.filterDone())
+            self.findLineEdit.setText(dlg.filterDone() if dlg.filterDone() else "")
             self.applyFilter()
 
     def editEsc(self, idxcur, idxold):
