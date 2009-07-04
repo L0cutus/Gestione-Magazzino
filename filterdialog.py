@@ -24,12 +24,12 @@ from PyQt4.QtGui  import QTableView, QMessageBox
 
 from PyQt4.QtSql  import QSqlTableModel, QSqlDatabase, QSqlQuery
 
-import ui_filterdialog
+import filterdialog_ui
 
 FILTERDLGORG = "TIME di Stefano Z."
 FILTERDLGAPP = "Filter Dialog"
 
-class FilterDialog(QDialog, ui_filterdialog.Ui_FilterDialog):
+class FilterDialog(QDialog, filterdialog_ui.Ui_FilterDialog):
 
     def __init__(self, header=None, db=None, parent=None):
         super(FilterDialog, self).__init__(parent)

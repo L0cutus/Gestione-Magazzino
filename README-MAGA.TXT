@@ -1,6 +1,6 @@
 Gestione Magazzino v0.2 del 25 maggio 2009
 by TIME di Stefano Zamprogno
-licenza GPL2
+licenza GPL3
 ------------------------------------------
 
 Sistema testato:

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'magazzino.ui'
 #
-# Created: Mon Jun  1 19:49:06 2009
+# Created: Sat Jun  6 17:37:12 2009
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -210,8 +210,6 @@ class Ui_MainWindow(object):
         icon14.addPixmap(QtGui.QPixmap(":/fileopen.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.action_Load_File.setIcon(icon14)
         self.action_Load_File.setObjectName("action_Load_File")
-        self.action_Save_database = QtGui.QAction(MainWindow)
-        self.action_Save_database.setObjectName("action_Save_database")
         self.actionA_bout = QtGui.QAction(MainWindow)
         icon15 = QtGui.QIcon()
         icon15.addPixmap(QtGui.QPixmap(":/info.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -262,7 +260,6 @@ class Ui_MainWindow(object):
         self.menu_Help.setTitle(QtGui.QApplication.translate("MainWindow", "&Help", None, QtGui.QApplication.UnicodeUTF8))
         self.action_New_File.setText(QtGui.QApplication.translate("MainWindow", "&New database", None, QtGui.QApplication.UnicodeUTF8))
         self.action_Load_File.setText(QtGui.QApplication.translate("MainWindow", "&Load database", None, QtGui.QApplication.UnicodeUTF8))
-        self.action_Save_database.setText(QtGui.QApplication.translate("MainWindow", "&Save database", None, QtGui.QApplication.UnicodeUTF8))
         self.actionA_bout.setText(QtGui.QApplication.translate("MainWindow", "A&bout", None, QtGui.QApplication.UnicodeUTF8))
         self.actionA_bout.setToolTip(QtGui.QApplication.translate("MainWindow", "About...", None, QtGui.QApplication.UnicodeUTF8))
         self.actionA_bout.setStatusTip(QtGui.QApplication.translate("MainWindow", "About...", None, QtGui.QApplication.UnicodeUTF8))

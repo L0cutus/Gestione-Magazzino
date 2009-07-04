@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'aboutbox.ui'
+# Form implementation generated from reading ui file 'aboutmaga.ui'
 #
-# Created: Mon Jun  1 15:30:42 2009
+# Created: Fri Jun  5 23:59:10 2009
 #      by: PyQt4 UI code generator 4.4.4
 #
 # WARNING! All changes made in this file will be lost!

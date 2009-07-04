@@ -11,9 +11,9 @@ import sys
 from PyQt4.QtCore import Qt, SIGNAL
 from PyQt4.QtGui  import QApplication, QComboBox, QDialog
 from PyQt4.QtGui  import QDoubleSpinBox, QGridLayout, QLabel
-import ui_aboutbox
+import aboutmaga_ui
 
-class AboutBox(QDialog, ui_aboutbox.Ui_AboutDialog):
+class AboutBox(QDialog, aboutmaga_ui.Ui_AboutDialog):
     def __init__(self, parent=None):
         super(AboutBox, self).__init__(parent)
 

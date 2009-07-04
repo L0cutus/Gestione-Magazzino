@@ -34,9 +34,14 @@ from PyQt4.QtSql  import QSqlDatabase, QSqlQuery, QSqlRelation
 from PyQt4.QtSql  import QSqlRelationalDelegate, QSqlRelationalTableModel
 from PyQt4.QtSql  import QSqlTableModel
 
-import ui_magazzino
+#from PyQt4.QtCore import qVersion
+
+import magazzino_ui
 import filterdialog
-import aboutbox
+import aboutmaga
+
+#~ print(qVersion())
+#~ print(QT_VERSION_STR)
 
 __version__ = '0.2.0'
 
@@ -134,7 +139,7 @@ class MSDelegate(QSqlRelationalDelegate):
             QSqlRelationalDelegate.setModelData(self, editor, model, index)
 
 
-class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
+class MainWindow(QMainWindow, magazzino_ui.Ui_MainWindow):
 
     FIRST, PREV, NEXT, LAST = range(4)
 
@@ -152,38 +157,45 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
         self.loadInitialFile()
         self.setupUiSignals()
 
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Down:
+            self.addDettRecord()
+        else:
+            QMainWindow.keyPressEvent(self, event)
 
     def creaStrutturaDB(self):
         query = QSqlQuery()
-        if not query.exec_("""CREATE TABLE magamaster (
-                            id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,
-                            scaff VARCHAR(10) NOT NULL)"""):
-            QMessageBox.warning(self, "Magazzino",
-                            QString("Creazione tabella fallita!"))
-            return False
+        if not ("magamaster" in self.db.tables()):
+            if not query.exec_("""CREATE TABLE magamaster (
+                                id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,
+                                scaff VARCHAR(10) NOT NULL)"""):
+                QMessageBox.warning(self, "Magazzino",
+                                QString("Creazione tabella fallita!"))
+                return False
 
-        if not query.exec_("""CREATE TABLE magaslave (
-                            id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,
-                            datains DATE NOT NULL,
-                            abbi VARCHAR(50),
-                            angro VARCHAR(50),
-                            desc VARCHAR(100),
-                            qt INTEGER NOT NULL DEFAULT '1',
-                            imp DOUBLE NOT NULL DEFAULT '0.0',
-                            equiv VARCHAR(100),
-                            mmid INTEGER NOT NULL,
-                            fatt VARCHAR(50),
-                            note VARCHAR(200),
-                            FOREIGN KEY (mmid) REFERENCES magamaster)"""):
-            QMessageBox.warning(self, "Magazzino",
-                            QString("Creazione tabella fallita!"))
-            return False
+        if not ("magaslave" in self.db.tables()):
+            if not query.exec_("""CREATE TABLE magaslave (
+                                id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,
+                                datains DATE NOT NULL,
+                                abbi VARCHAR(50),
+                                angro VARCHAR(50),
+                                desc VARCHAR(100),
+                                qt INTEGER NOT NULL DEFAULT '1',
+                                imp DOUBLE NOT NULL DEFAULT '0.0',
+                                equiv VARCHAR(100),
+                                mmid INTEGER NOT NULL,
+                                fatt VARCHAR(50),
+                                note VARCHAR(200),
+                                FOREIGN KEY (mmid) REFERENCES magamaster)"""):
+                QMessageBox.warning(self, "Magazzino",
+                                QString("Creazione tabella fallita!"))
+                return False
+            QMessageBox.information(self, "Magazzino",
+                                QString("Database Creato!"))
 
-        QMessageBox.information(self, "Magazzino",
-                            QString("Database Creato!"))
         return True
 
-    def loadFile(self, fname=None, fnew=False):
+    def loadFile(self, fname=None):
         if fname is None:
             return
         if self.db.isOpen():
@@ -194,14 +206,14 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
                                 QString("Database Error: %1")
                                 .arg(db.lastError().text()))
         else:
-            if fnew:
-                if not self.creaStrutturaDB():
-                    return
+            if not self.creaStrutturaDB():
+                return
             self.filename = unicode(fname)
+            self.setWindowTitle("Gestione Magazzino - %s" % self.filename)
             self.setupModels()
             self.setupMappers()
             self.setupTables()
-            self.setupItmSignals()
+            #self.setupItmSignals()
             self.restoreTablesSettings()
             self.mmUpdate()
 
@@ -230,7 +242,7 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
                     "Gestione Magazzino - Scegli database",
                     dir, "*.db")
         if fname:
-            self.loadFile(fname, True)
+            self.loadFile(fname)
 
     def setupMenu(self):
         # AboutBox
@@ -246,7 +258,7 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
 
 
     def showAboutBox(self):
-        dlg = aboutbox.AboutBox(self)
+        dlg = aboutmaga.AboutBox(self)
         dlg.exec_()
 
     def printInventory(self):
@@ -305,7 +317,7 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
 
         def myLaterPages(canvas, doc):
             canvas.saveState()
-            canvas.setStrokeColorRGB(1,0,0)
+            canvas.setStrokeColorRGB(0.50,0.50,0.50)
             canvas.setLineWidth(5)
             canvas.line(45,72,45,PAGE_HEIGHT-72)
             canvas.setFont('Times-Roman',9)
@@ -365,7 +377,7 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
                         'mydoc.pdf'))
         doc.build(Elements,onFirstPage=myFirstPage, onLaterPages=myLaterPages)
 
-        subprocess.call(['gnome-open',os.path.join(os.path.dirname(__file__),
+        subprocess.Popen(['gnome-open',os.path.join(os.path.dirname(__file__),
                         'mydoc.pdf')])
 
     def setupMappers(self):
@@ -392,7 +404,7 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
         self.sItmSelModel = QItemSelectionModel(self.sModel)
         self.sTableView.setSelectionModel(self.sItmSelModel)
         self.sTableView.setSelectionBehavior(QTableView.SelectRows)
-        self.sTableView.setTabKeyNavigation(False)
+        #self.sTableView.setTabKeyNavigation(True)
 
 
         self.fTableView.setModel(self.fModel)
@@ -400,7 +412,8 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
         self.fTableView.setWordWrap(True)
         self.fTableView.resizeRowsToContents()
         self.fTableView.setAlternatingRowColors(True)
-
+        self.fItmSelModel = QItemSelectionModel(self.fModel)
+        self.fTableView.setSelectionModel(self.fItmSelModel)
 
     def setupModels(self):
         """
@@ -451,12 +464,14 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
                                             "id", "scaff"))
         self.fModel.select()
 
-    def setupItmSignals(self):
-        self.connect(self.sItmSelModel, SIGNAL(
-                    "currentChanged(QModelIndex, QModelIndex)"),
-                    self.editEsc)
+    #~ def setupItmSignals(self):
+        #~ self.connect(self.sItmSelModel, SIGNAL(
+                    #~ "currentChanged(QModelIndex, QModelIndex)"),
+                    #~ self.editEsc)
 
     def setupUiSignals(self):
+        #~ self.connect(self.sTableView, SIGNAL("keyPressEvent ( QKeyEvent * event )"),
+                    #~ self.kPress)
         self.connect(self.scaffLineEdit, SIGNAL("returnPressed()"),
                     lambda: self.saveRecord(MainWindow.FIRST))
         self.connect(self.findLineEdit, SIGNAL("returnPressed()"),
@@ -538,11 +553,11 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
             self.findLineEdit.setText(dlg.filterDone() if dlg.filterDone() else "")
             self.applyFilter()
 
-    def editEsc(self, idxcur, idxold):
-        if self.editindex and self.editindex.isValid():
-            if idxcur.row() != self.editindex.row():
-                self.sModel.revertAll()
-                self.editindex = None
+    #~ def editEsc(self, idxcur, idxold):
+        #~ if self.editindex and self.editindex.isValid():
+            #~ if idxcur.row() != self.editindex.row():
+                #~ self.sModel.revertAll()
+                #~ self.editindex = None
 
     def mmUpdate(self):
         row = self.mapper.currentIndex()
@@ -603,7 +618,8 @@ class MainWindow(QMainWindow, ui_magazzino.Ui_MainWindow):
             self.scaffLineEdit.setFocus()
             return
         # aggiunge la nuova riga alla vista
-        self.sModel.revertAll()
+        self.sModel.submitAll()
+        self.sModel.select()
         row = self.sModel.rowCount()
         self.sModel.insertRow(row)
         if row > 1:
@@ -766,6 +782,7 @@ def main():
 
     form = MainWindow()
     form.show()
+    form.raise_()
     app.exec_()
     del form
 
