@@ -93,8 +93,10 @@ class ssModel(QSqlTableModel):
 
 
 class MSDelegate(QSqlRelationalDelegate):
+    lastData = None
     def __init__(self, parent=None):
         super(MSDelegate, self).__init__(parent)
+
 
     def createEditor(self, parent, option, index):
         if index.column() == DATAINS:
@@ -122,17 +124,16 @@ class MSDelegate(QSqlRelationalDelegate):
     def setEditorData(self, editor, index):
         if index.column() == DATAINS:
             editor.setDisplayFormat(DATEFORMAT)
-            date = index.model().data(index, Qt.DisplayRole).toDate()
-            if not date:
-                editor.setDate(QDate.currentDate())
-            else:
-                editor.setDate(date)
+            if not self.lastData:
+                self.lastData = QDate.currentDate()
+            editor.setDate(self.lastData)
         else:
             QSqlRelationalDelegate.setEditorData(self, editor, index)
 
     def setModelData(self, editor, model, index):
         if index.column() == DATAINS:
             model.setData(index, QVariant(editor.date()))
+            self.lastData = editor.date()
         elif index.column() == IMP:
             model.setData(index, QVariant(editor.text().replace(',', '.')))
         else:
@@ -626,6 +627,10 @@ class MainWindow(QMainWindow, magazzino_ui.Ui_MainWindow):
             precfatt = self.sModel.data(self.sModel.index(row-1, FATT))
         else:
             precfatt = ''
+        if row > 1:
+            lastData = self.sModel.data(self.sModel.index(row-1, DATAINS))
+        else:
+            lastData = ''
         self.sModel.setData(self.sModel.index(row, MMID),
                                                 QVariant(masterid))
         self.sModel.setData(self.sModel.index(row, QT),
