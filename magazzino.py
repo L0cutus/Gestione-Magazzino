@@ -118,8 +118,8 @@ class MSDelegate(QSqlRelationalDelegate):
             editor.setAlignment(Qt.AlignRight|Qt.AlignVCenter)
             return editor
         else:
-            return QSqlRelationalDelegate.createEditor(self, parent,
-                                                    option, index)
+            return QSqlRelationalDelegate.createEditor(self, parent, option, index)
+
 
     def setEditorData(self, editor, index):
         if index.column() == DATAINS:
@@ -129,6 +129,7 @@ class MSDelegate(QSqlRelationalDelegate):
             editor.setDate(self.lastData)
         else:
             QSqlRelationalDelegate.setEditorData(self, editor, index)
+
 
     def setModelData(self, editor, model, index):
         if index.column() == DATAINS:
@@ -334,11 +335,9 @@ class MainWindow(QMainWindow, magazzino_ui.Ui_MainWindow):
             tot += querygrp.value(3).toDouble()[0]
             querydett.bindValue(":abbi", QVariant(querygrp.value(0).toString()))
             querydett.exec_()
-            data = [['Datains', 'Abbi', 'Angro', 'Descrizione', 'Qt', 'Imp'],]
+            data = [['Abbi', 'Angro', 'Descrizione', 'Qt', 'Imp'],]
             while querydett.next():
-                data.append([   unicode(querydett.value(0).toDate().toString(
-                                                    "dd/MM/yyyy")),
-                                p(unicode(querydett.value(1).toString()),
+                data.append([ p(unicode(querydett.value(1).toString()),
                                                 ps(name='Normal')),
                                 p(unicode(querydett.value(2).toString()),
                                                 ps(name='Normal')),
@@ -347,7 +346,7 @@ class MainWindow(QMainWindow, magazzino_ui.Ui_MainWindow):
                                 querydett.value(4).toInt()[0],
                                 unicode("%.2f" %
                                         querydett.value(5).toDouble()[0])])
-            data.append([None, None, None,
+            data.append([None, None,
                         unicode("GRUPPO '%s'" % querygrp.value(0).toString()),
                         unicode("Subtotale:"),
                         unicode("€ %.2f" % querygrp.value(3).toDouble()[0])])
