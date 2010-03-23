@@ -11,6 +11,6 @@ PyQt4 v4.4.4
 Python-reportlab v2.3
 ---------------------
 
-lanciare il programma principale 'magazzino.pyw'
-con il comando 'python magazzino.pyw'
+lanciare il programma principale 'magazzino.py'
+con il comando 'python magazzino.py'
 
