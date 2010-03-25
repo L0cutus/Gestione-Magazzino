@@ -25,7 +25,7 @@ from PyQt4.QtGui  import QLabel, QLineEdit, QMessageBox, QPixmap
 from PyQt4.QtGui  import QTabWidget, QPushButton, QRegExpValidator
 from PyQt4.QtGui  import QStyleOptionViewItem, QTableView, QVBoxLayout
 from PyQt4.QtGui  import QDataWidgetMapper, QTextDocument, QStyle
-from PyQt4.QtGui  import QColor, QBrush, QTextOption
+from PyQt4.QtGui  import QColor, QBrush, QTextOption, QMenu
 from PyQt4.QtGui  import QItemSelectionModel,QStandardItemModel
 from PyQt4.QtGui  import QAbstractItemView, QIntValidator
 from PyQt4.QtGui  import QDoubleValidator, QIcon, QFileDialog
@@ -464,14 +464,24 @@ class MainWindow(QMainWindow, magazzino_ui.Ui_MainWindow):
                                             "id", "scaff"))
         self.fModel.select()
 
-    #~ def setupItmSignals(self):
-        #~ self.connect(self.sItmSelModel, SIGNAL(
-                    #~ "currentChanged(QModelIndex, QModelIndex)"),
-                    #~ self.editEsc)
+    def one(self):
+        pass
+    def two(self):
+        pass
+
+    def ctxtMenu(self, point):
+        menu = QMenu(self)
+        oneAction = menu.addAction("&One")
+        twoAction = menu.addAction("&Two")
+        self.connect(oneAction, SIGNAL("triggered()"), self.one)
+        self.connect(twoAction, SIGNAL("triggered()"), self.two)
+        menu.exec_(self.sTableView.mapToGlobal(point))
+
 
     def setupUiSignals(self):
-        #~ self.connect(self.sTableView, SIGNAL("keyPressEvent ( QKeyEvent * event )"),
-                    #~ self.kPress)
+        self.sTableView.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.connect(self.sTableView,  SIGNAL("customContextMenuRequested(const QPoint &)"),
+                    self.ctxtMenu)
         self.connect(self.scaffLineEdit, SIGNAL("returnPressed()"),
                     lambda: self.saveRecord(MainWindow.FIRST))
         self.connect(self.findLineEdit, SIGNAL("returnPressed()"),
