@@ -144,6 +144,7 @@ class MSDelegate(QSqlRelationalDelegate):
 class MainWindow(QMainWindow, magazzino_ui.Ui_MainWindow):
 
     FIRST, PREV, NEXT, LAST = range(4)
+    Clipboard = [] # lista di oggetti
 
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
@@ -470,6 +471,7 @@ class MainWindow(QMainWindow, magazzino_ui.Ui_MainWindow):
         pass
 
     def ctxtMenu(self, point):
+        print(len(self.sTableView.selectedIndexes()))
         menu = QMenu(self)
         oneAction = menu.addAction("&One")
         twoAction = menu.addAction("&Two")
