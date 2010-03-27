@@ -15,7 +15,7 @@ import sys
 import subprocess
 
 from PyQt4.QtCore import PYQT_VERSION_STR, QDate, QFile
-from PyQt4.QtCore import QRegExp, QString, QVariant, Qt
+from PyQt4.QtCore import QString, QVariant, Qt
 from PyQt4.QtCore import SIGNAL, QModelIndex, QSettings
 from PyQt4.QtCore import QSize, QPoint
 
@@ -26,7 +26,7 @@ from PyQt4.QtGui  import QTabWidget, QPushButton, QRegExpValidator
 from PyQt4.QtGui  import QStyleOptionViewItem, QTableView, QVBoxLayout
 from PyQt4.QtGui  import QDataWidgetMapper, QTextDocument, QStyle
 from PyQt4.QtGui  import QColor, QBrush, QTextOption, QMenu
-from PyQt4.QtGui  import QItemSelectionModel,QStandardItemModel
+from PyQt4.QtGui  import QItemSelectionModel, QStandardItemModel
 from PyQt4.QtGui  import QAbstractItemView, QIntValidator
 from PyQt4.QtGui  import QDoubleValidator, QIcon, QFileDialog
 
@@ -118,7 +118,8 @@ class MSDelegate(QSqlRelationalDelegate):
             editor.setAlignment(Qt.AlignRight|Qt.AlignVCenter)
             return editor
         else:
-            return QSqlRelationalDelegate.createEditor(self, parent, option, index)
+            return QSqlRelationalDelegate.createEditor(self, parent, option,
+                                                       index)
 
 
     def setEditorData(self, editor, index):
@@ -170,7 +171,8 @@ class MainWindow(QMainWindow, magazzino_ui.Ui_MainWindow):
         query = QSqlQuery()
         if not ("magamaster" in self.db.tables()):
             if not query.exec_("""CREATE TABLE magamaster (
-                                id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,
+                                id INTEGER PRIMARY KEY AUTOINCREMENT 
+                                UNIQUE NOT NULL,
                                 scaff VARCHAR(10) NOT NULL)"""):
                 QMessageBox.warning(self, "Magazzino",
                                 QString("Creazione tabella fallita!"))
@@ -207,7 +209,7 @@ class MainWindow(QMainWindow, magazzino_ui.Ui_MainWindow):
         if not self.db.open():
             QMessageBox.warning(self, "Magazzino",
                                 QString("Database Error: %1")
-                                .arg(db.lastError().text()))
+                                .arg(self.db.lastError().text()))
         else:
             if not self.creaStrutturaDB():
                 return
@@ -264,6 +266,7 @@ class MainWindow(QMainWindow, magazzino_ui.Ui_MainWindow):
         dlg = aboutmaga.AboutBox(self)
         dlg.exec_()
 
+
     def printInventory(self):
         '''
             Print Inventory
@@ -279,13 +282,15 @@ class MainWindow(QMainWindow, magazzino_ui.Ui_MainWindow):
         querygrp.exec_("SELECT abbi,qt,imp,sum(qt*imp) "
                     "FROM magaslave GROUP BY abbi")
         querydett.prepare("SELECT datains,abbi,angro,desc,qt,imp "
-                        "FROM magaslave WHERE abbi = :abbi AND qt > 0 ORDER BY datains")
+                        "FROM magaslave WHERE abbi = :abbi AND "
+                        "qt > 0 ORDER BY datains")
 
         from reportlab.pdfgen.canvas import Canvas
         from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
         from reportlab.lib.units import cm
         from reportlab.lib.enums import TA_LEFT,TA_RIGHT,TA_CENTER
-        from reportlab.platypus import Spacer, SimpleDocTemplate, Table, TableStyle, Paragraph
+        from reportlab.platypus import Spacer, SimpleDocTemplate 
+        from reportlab.platypus import Table, TableStyle, Paragraph
         from reportlab.rl_config import defaultPageSize
         from reportlab.lib import colors
 
@@ -372,7 +377,8 @@ class MainWindow(QMainWindow, magazzino_ui.Ui_MainWindow):
                                                 'Helvetica-Bold', 10])))
             Elements.append(Spacer(0.5*cm, 0.5*cm))
 
-        Elements.append(Paragraph("<para align=right><b>TOTALE GENERALE: € %.2f</b></para>" % tot, styleN))
+        Elements.append(Paragraph("<para align=right><b>TOTALE GENERALE:"
+                                    "€ %.2f</b></para>" % tot, styleN))
 
         doc = SimpleDocTemplate(os.path.join(os.path.dirname(__file__),
                         'mydoc.pdf'))
@@ -465,25 +471,38 @@ class MainWindow(QMainWindow, magazzino_ui.Ui_MainWindow):
                                             "id", "scaff"))
         self.fModel.select()
 
-    def one(self):
-        pass
-    def two(self):
+    def clipCopy(self):
+        self.Clipboard = self.sTableView.selectedIndexes()
+        selrows = self.sItmSelModel.selectedRows()
+        # TODO : da usare:  selrows = self.sItmSelModel.selectedRows()
+        print(selrows, len(selrows))
+        print(len(self.Clipboard))
+        # FIXME : bla bla bla
+
+    def clipDel(self):
+        self.delDettRecord()
+
+    def clipPaste(self):
         pass
 
     def ctxtMenu(self, point):
-        print(len(self.sTableView.selectedIndexes()))
         menu = QMenu(self)
-        oneAction = menu.addAction("&One")
-        twoAction = menu.addAction("&Two")
-        self.connect(oneAction, SIGNAL("triggered()"), self.one)
-        self.connect(twoAction, SIGNAL("triggered()"), self.two)
+        copyAction = menu.addAction("&Copy")
+        self.connect(copyAction, SIGNAL("triggered()"), self.clipCopy)
+        delAction = menu.addAction("&Del")
+        self.connect(delAction, SIGNAL("triggered()"), self.clipDel)
+        if len(self.Clipboard) > 0:
+            pasteAction = menu.addAction("&Paste")
+            self.connect(pasteAction, SIGNAL("triggered()"), self.clipPaste)
+
         menu.exec_(self.sTableView.mapToGlobal(point))
 
 
     def setupUiSignals(self):
         self.sTableView.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.connect(self.sTableView,  SIGNAL("customContextMenuRequested(const QPoint &)"),
-                    self.ctxtMenu)
+        self.connect(self.sTableView,  SIGNAL(
+                        "customContextMenuRequested(const QPoint &)"),
+                        self.ctxtMenu)
         self.connect(self.scaffLineEdit, SIGNAL("returnPressed()"),
                     lambda: self.saveRecord(MainWindow.FIRST))
         self.connect(self.findLineEdit, SIGNAL("returnPressed()"),
@@ -562,7 +581,8 @@ class MainWindow(QMainWindow, magazzino_ui.Ui_MainWindow):
         dlg = filterdialog.FilterDialog(headerDef,
                         QSqlDatabase.database(), self)
         if(dlg.exec_()):
-            self.findLineEdit.setText(dlg.filterDone() if dlg.filterDone() else "")
+            self.findLineEdit.setText(dlg.filterDone() 
+                                        if dlg.filterDone() else "")
             self.applyFilter()
 
     #~ def editEsc(self, idxcur, idxold):
